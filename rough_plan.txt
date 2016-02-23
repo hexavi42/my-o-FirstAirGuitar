@@ -1,0 +1,17 @@
+want to test:
+5 finger position, flex or non flex
+	- 5 outputs (fingers), 8 inputs
+5 finger position, assuming 3 levels of articulation (out, half-bent, full-bent) are sufficient to determine chord structure
+	- 15 outputs (3 * 5 fingers), 8 inputs
+x where x is the number of intended recognized chords
+	- x outputs, 8 inputs
+5 finger position, 3 level, onset and offset behaviour, 8*y where y is number of previous time points desired
+	- x * 5 fingers (where x is intended resolution)
+
+need:
+test data and/or a way of gathering it (method or app)
+	- preferably of more than one person
+	- training set with guitar and without guitar (actual air)
+
+to consider:
+strumming hand input - how to take it?
