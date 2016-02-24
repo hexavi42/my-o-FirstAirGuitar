@@ -44,14 +44,14 @@ def main():
 
         while True:
             print("""Enter the current position of your fingers,\n
-            where 1 indicates bent and 0 indicates unbent,\n
+            where 0 indicates unbent and x > 0 is some measure of bent,\n
             Separated by spaces, starting with thumb and ending with pinky.\n
-            E.g. index finger bent, rest unbent would be '0 1 0 0 0':""")
+            E.g. index finger very bent, rest unbent would be '0 3 0 0 0':""")
             str_fing = raw_input("-->")
             try:
                 fing = [int(x) for x in str_fing.split(" ")]
             finally:
-                if len(fing) != 5 or len(set(fing)) > 2 or max(fing) > 1 or min(fing) < 0:
+                if len(fing) != 5:
                     raise StopIteration("Done Gathering Data")
             raw_input("Form the indicated hand shape. Press Enter when ready.")
             hub.run_once(3000, listener)
