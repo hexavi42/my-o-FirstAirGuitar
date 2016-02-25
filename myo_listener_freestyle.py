@@ -18,12 +18,13 @@ class EmgListen(libmyo.DeviceListener):
 
 def lblDataDump(data, labels, fName=None):
     labeled_data = {"data": data, "labels": labels}
-    cwd = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    sN = os.path.basename(os.path.realpath(__file__)).split('_')[-1]
     if not os.path.isdir("{0}/{1}".format(cwd, "data")):
             os.makedirs("{0}/{1}".format(cwd, "data"))
-    dtStr = dt.now().strptime("%y-%m-%d_%H-%M-%S")
+    dtStr = "{:%y-%m-%d_%H-%M-%S}".format(dt.now())
     if fName is None:
-        fName = "{0}/{1}/{2}.pkl".format(cwd, "data", dtStr, 'myo_data')
+        fName = "{0}/{1}/{2}_{3}{4}.pkl".format(cwd, "data", dtStr, 'myo-', sN)
     with open(fName, 'w') as handle:
         pickle.dump(labeled_data, handle)
 
@@ -68,10 +69,14 @@ def main():
                                        .format(len(listener.store_data)))
             else:
                 print("Data was not saved.")
+    except:
+        lblDataDump(trial_data, fing_curv, fName='partial')
+        raise
+    else:
+        lblDataDump(trial_data, fing_curv)
     finally:
         hub.stop(True)
         hub.shutdown()
-        lblDataDump(trial_data, fing_curv)
 
 
 if __name__ == '__main__':
