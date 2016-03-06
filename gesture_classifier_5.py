@@ -49,10 +49,13 @@ class nur_net(object):
 
 
 def main():
-    h_lays = 4
     parser = argparse.ArgumentParser(description='Try machine learning on Myo data file')
     parser.add_argument('filepath', type=str, default='',
                         help='filepath of .pkl file to be analyzed')
+    parser.add_argument('-hl', '--hidden', type=int, default=2,
+                        help='number of hidden layers to use in the model')
+    parser.add_argument('-e', '--epochs', type=int, default=30,
+                        help='number of training epochs to run')
     args = parser.parse_args()
     if not args.filepath:
         try:
@@ -67,13 +70,14 @@ def main():
         except:
             raise RuntimeError('No file in current directory available for analysis.')
     samples = pickle.load(open(args.filepath, 'r'))
-    myo_net = nur_net(h_lays)
+    myo_net = nur_net(args.hidden)
     x_data = np.array(samples['data']).T
     y_data = np.array(samples['labels']).T
-    myo_net.train(x_data, y_data)
+    myo_net.train(x_data, y_data, eps=args.epochs)
     [loss, acc] = myo_net.accuracy(x_data, y_data)
     acc = int(acc*100)
-    save_name = "{0}_lw_{1}_{2}".format(args.filepath.split('.')[0], h_lays, acc)
+    save_name = "{0}_lw_h{1}_e{2}_a{3}".format(args.filepath.split('.')[0],
+                                               args.hidden, args.epochs, acc)
     myo_net.save(save_name)
 
 if __name__ == "__main__":
