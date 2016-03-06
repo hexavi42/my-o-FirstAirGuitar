@@ -2,27 +2,32 @@ import pickle
 import numpy as np
 import argparse
 import os
+import copy
 
 
 def load_pkl(filepath):
     with open(filepath, 'r') as data_file:
-        raw_data = pickle.load(data_file)
-    return raw_data
+        data = pickle.load(data_file)
+    return data
 
 
-def reshape(raw_data):
-    data = {'data': [], 'labels': []}
-    data['data'] = list(np.array([dp for trial in raw_data['data'] for dp in trial]).T)
+def process(raw_data):
+    data = {'labels': [], 'data': []}
+    all_trial_data = [[] for channels in raw_data['data'][0][0]]
+    for trial in raw_data['data']:
+        for channel_no in range(len(np.array(trial).T)):
+            all_trial_data[channel_no].extend(rect_ave(np.array(trial).T[channel_no]))
+    data['data'] = all_trial_data
     data['labels'] = list(np.array([lp for trial in raw_data['labels'] for lp in trial]).T)
+    print(len(data['data']))
+    print(len(data['data'][0]))
     return data
 
 
-def rect_ave(raw_data):
-    data = {'labels': raw_data['labels'], 'data': []}
-    for channel in raw_data['data']:
-        x = np.absolute(channel)
-        data['data'].append(np.convolve(x, np.ones((30,))/30, 'same'))
-    return data
+def rect_ave(np_arr):
+    x = np.absolute(np_arr)
+    window = len(x)/10 if len(x)/10 > 2 else 2
+    return np.convolve(x, np.ones((window,))/window, 'same')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Rectify and convolve Myo data, storing it in a new object.')
@@ -42,9 +47,8 @@ if __name__ == "__main__":
         except:
             raise RuntimeError('No file in current directory available for conversion.')
 
-    raw_data = load_pkl(args.filepath)
-    raw_data = reshape(raw_data)
-    data = rect_ave(raw_data)
+    data = load_pkl(args.filepath)
+    data = process(data)
 
-    with open('{0}.fix'.format(args.filepath), 'w') as new_data:
+    with open('{0}.proc'.format(args.filepath), 'w') as new_data:
         pickle.dump(data, new_data)
