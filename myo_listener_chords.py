@@ -53,6 +53,8 @@ def main(chords=['G', "C", "Em", "D"], fingerings={}):
             while True:
                 if chord in fingerings:
                     print("{0} ({1})".format(chord, fingerings[chord]))
+                else:
+                    print(chord)
                 raw_input("Form the indicated chord. Press Enter when ready.")
                 hub.run_once(3000, listener)
                 confirm = raw_input("Enter to save or any other input to deny.")
@@ -76,5 +78,5 @@ def main(chords=['G', "C", "Em", "D"], fingerings={}):
 
 
 if __name__ == '__main__':
-    chords, fingerings = scrape_chords('wonderwall_tab.txt')
-    main(chords, fingerings)
+    #chords, fingerings = scrape_chords('wonderwall_tab.txt')
+    main()

@@ -11,23 +11,16 @@ def load_pkl(filepath):
     return data
 
 
-def process(raw_data):
-    data = {'labels': [], 'data': []}
-    all_trial_data = [[] for channels in raw_data['data'][0][0]]
-    for trial in raw_data['data']:
-        for channel_no in range(len(np.array(trial).T)):
-            all_trial_data[channel_no].extend(rect_ave(np.array(trial).T[channel_no]))
-    data['data'] = all_trial_data
-    data['labels'] = list(np.array([lp for trial in raw_data['labels'] for lp in trial]).T)
-    print(len(data['data']))
-    print(len(data['data'][0]))
-    return data
-
-
-def rect_ave(np_arr):
-    x = np.absolute(np_arr)
-    window = len(x)/10 if len(x)/10 > 2 else 2
-    return np.convolve(x, np.ones((window,))/window, 'same')
+def rect_ave(np_arr, window_size=None):
+    if len(np_arr.shape) > 1:
+        raise RuntimeError("Shape {0} is not accepted, feed me a 1xN array")
+    else:
+        x = np.absolute(np_arr)
+        if window_size is None:
+            window = len(x)/20 if len(x)/20 > 5 else 5
+        else:
+            window = window_size
+        return np.convolve(x, np.ones((window,))/window, 'same')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Rectify and convolve Myo data, storing it in a new object.')
@@ -48,7 +41,9 @@ if __name__ == "__main__":
             raise RuntimeError('No file in current directory available for conversion.')
 
     data = load_pkl(args.filepath)
-    data = process(data)
+    for trial in data['data']:
+        for channel in data:
+            channel = rect_ave(channel)
 
     with open('{0}.proc'.format(args.filepath), 'w') as new_data:
         pickle.dump(data, new_data)

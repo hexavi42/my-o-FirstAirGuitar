@@ -3,6 +3,7 @@ import pickle
 import copy
 import os
 from datetime import datetime as dt
+import numpy as np
 
 
 class EmgListen(libmyo.DeviceListener):
@@ -16,15 +17,21 @@ class EmgListen(libmyo.DeviceListener):
         self.store_data.append(emg)
 
 
-def lblDataDump(data, labels, fName=None):
-    labeled_data = {"data": data, "labels": labels}
+def lblDataDump(data, labels, fName=None, sName=None):
+    all_trial_data = [[] for channels in data[0][0]]
+    for trial in data:
+        for channel_no in range(len(np.array(trial).T)):
+            all_trial_data[channel_no].extend(np.array(trial).T[channel_no])
     cwd = os.path.dirname(os.path.realpath(__file__))
     sN = os.path.basename(os.path.realpath(__file__)).split('_')[-1]
     if not os.path.isdir("{0}/{1}".format(cwd, "data")):
             os.makedirs("{0}/{1}".format(cwd, "data"))
     dtStr = "{:%y-%m-%d_%H-%M-%S}".format(dt.now())
+    if sName:
+        sN = sName
     if fName is None:
         fName = "{0}/{1}/{2}_{3}{4}.pkl".format(cwd, "data", dtStr, 'myo-', sN)
+    labeled_data = {'data': all_trial_data, 'labels': labels}
     with open(fName, 'w') as handle:
         pickle.dump(labeled_data, handle)
 
