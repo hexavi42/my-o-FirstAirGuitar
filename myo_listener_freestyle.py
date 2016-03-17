@@ -18,10 +18,12 @@ class EmgListen(libmyo.DeviceListener):
 
 
 def lblDataDump(data, labels, fName=None, sName=None):
-    all_trial_data = [[] for channels in data[0][0]]
+    all_trials = []
     for trial in data:
+        trial_data = [[] for channels in trial[0]]
         for channel_no in range(len(np.array(trial).T)):
-            all_trial_data[channel_no].extend(np.array(trial).T[channel_no])
+            trial_data[channel_no].extend(np.array(trial).T[channel_no])
+        all_trials.append(trial_data)
     cwd = os.path.dirname(os.path.realpath(__file__))
     sN = os.path.basename(os.path.realpath(__file__)).split('_')[-1]
     if not os.path.isdir("{0}/{1}".format(cwd, "data")):
@@ -31,7 +33,7 @@ def lblDataDump(data, labels, fName=None, sName=None):
         sN = sName
     if fName is None:
         fName = "{0}/{1}/{2}_{3}{4}.pkl".format(cwd, "data", dtStr, 'myo-', sN)
-    labeled_data = {'data': all_trial_data, 'labels': labels}
+    labeled_data = {'data': all_trials, 'labels': labels}
     with open(fName, 'w') as handle:
         pickle.dump(labeled_data, handle)
 
@@ -46,7 +48,7 @@ def main():
         hub.run_once(1000, listener)
         listener.store_data = []  # clear stored data between runs
         if len(listener.store_data) == 0:  # make sure it's cleared
-            print "Run, cleared, and flushed!"
+            print("Run, cleared, and flushed!")
         else:
             raise RuntimeError("store_data cache not flushed!")
 
@@ -70,7 +72,7 @@ def main():
                 fing_curv.append([fing for datum in listener.store_data])
                 listener.store_data = []  # clear stored data between runs
                 if len(listener.store_data) == 0:  # make sure it's cleared
-                    print "Run, cleared, and flushed!"
+                    print("Run, cleared, and flushed!")
                 else:
                     raise RuntimeError("store_data (len {0}) not flushed!"
                                        .format(len(listener.store_data)))

@@ -18,14 +18,14 @@ def scrape_chords(tab_file):
             if set(list(line)) <= chord_arr:
                 chordLine = re.findall("\S*", line)
                 for chord in chordLine:
-                    # remove blank results and string tunings
-                    if chord != '' and not re.match('[A-e#]{6}', chord):
+                    # remove blank results
+                    if chord != '':
                         chords.append(chord)
-            # TODO: consider scraping chord fingerings as well
+            # TODO: consider scraping chord fingerings from web as well
             elif fing_syn.match(line):
                 match_obj = fing_syn.match(line)
                 fingerings[match_obj.groups()[0]] = match_obj.groups()[1]
-    return chords, fingerings
+    return list(set(chords)), fingerings
 
 
 def main(chords=['G', "C", "Em", "D"], fingerings={}):
@@ -39,7 +39,7 @@ def main(chords=['G', "C", "Em", "D"], fingerings={}):
         hub.run_once(1000, listener)
         listener.store_data = []  # clear stored data between runs
         if len(listener.store_data) == 0:  # make sure it's cleared
-            print "Run, cleared, and flushed!"
+            print("Run, cleared, and flushed!")
         else:
             raise RuntimeError("store_data cache not flushed!")
 
@@ -48,7 +48,7 @@ def main(chords=['G', "C", "Em", "D"], fingerings={}):
         use the first result from Googling the chord name.\n
         "E.g. Em7 (022033):\n""")
 
-        # 2^5 possible configurations for five fingers, on/off
+        # record EMG data per chord
         for chord in chords:
             while True:
                 if chord in fingerings:
@@ -63,9 +63,7 @@ def main(chords=['G', "C", "Em", "D"], fingerings={}):
                     trial_data.append(copy.deepcopy(listener.store_data))
                     fing_curv.append([chord for datum in listener.store_data])
                     listener.store_data = []  # clear stored data between runs
-                    if len(listener.store_data) == 0:  # make sure it's cleared
-                        print "Run, cleared, and flushed!"
-                    else:
+                    if len(listener.store_data) != 0:  # make sure it's cleared
                         raise RuntimeError("store_data (len {0}) not flushed!"
                                            .format(len(listener.store_data)))
                     break
