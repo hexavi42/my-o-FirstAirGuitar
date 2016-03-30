@@ -28,7 +28,7 @@ def scrape_chords(tab_file):
     return list(set(chords)), fingerings
 
 
-def main(chords=['G', "C", "Em", "D"], fingerings={}):
+def main(chords=['G', "C", "Em", "D", "No chord - relax your hand"], fingerings={}):
     fing_curv = []
     trial_data = []
     libmyo.init()

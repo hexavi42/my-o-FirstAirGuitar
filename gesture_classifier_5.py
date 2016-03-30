@@ -10,7 +10,7 @@ import numpy as np
 class nur_net(object):
     model = None
 
-    def __init__(self, h_lay=2):
+    def __init__(self, h_lay=2, num_outputs=5):
         model = Sequential()
         # Dense(32) is a fully-connected layer with 64 hidden units.
         # in the first layer, you must specify the expected input data shape:
@@ -22,10 +22,10 @@ class nur_net(object):
             model.add(Dense(32, init='uniform'))
             model.add(Activation('tanh'))
             model.add(Dropout(0.5))
-        model.add(Dense(5, init='uniform'))
+        model.add(Dense(num_outputs, init='uniform'))
         model.add(Activation('softmax'))
 
-        sgd = SGD(lr=0.1, decay=1e-6, momentum=0.9, nesterov=True)
+        sgd = SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss='categorical_crossentropy',
                       optimizer=sgd)
         self.model = model
