@@ -6,6 +6,11 @@ import argparse
 import os
 import numpy as np
 
+# fix for python 2->3
+try:
+    input = raw_input
+except NameError:
+    pass
 
 def rect_ave(np_arr, window_size=None):
     if len(np_arr.shape) > 1:
@@ -68,12 +73,16 @@ def main():
     parser = argparse.ArgumentParser(description='Try machine learning on Myo data file')
     parser.add_argument('filepath', type=str, default='',
                         help='filepath of .pkl file to be analyzed')
-    parser.add_argument('-hl', '--hidden', type=int, default=4,
+    parser.add_argument('-hl', '--hidden', type=int, default=2,
                         help='number of hidden layers to use in the model')
     parser.add_argument('-e', '--epochs', type=int, default=30,
                         help='number of training epochs to run')
+    parser.add_argument('-b', '--batch', type=int, default=None,
+                        help='size of mini-batches for each epoch')
     parser.add_argument('-s', '--split', type=float, default=0.25,
                         help='data split-off to be used as test data')
+    parser.add_argument('-w', '--window', type=int, default=30,
+                        help='size of moving average window on (100 Hz to 200 Hz expected sampling rate)')
 
     # Ryan ran 50 separate trials, so we're configuring this to run for multiple files
     args = parser.parse_args()
@@ -110,7 +119,7 @@ def main():
     myo_net = nur_net(args.hidden, len(catter.uniques))
     for tri_ind in range(len(data['data'])):
         for chan_ind in range(len(data['data'][tri_ind])):
-            data['data'][tri_ind][chan_ind] = rect_ave(np.array(data['data'][tri_ind][chan_ind]), window_size=500)
+            data['data'][tri_ind][chan_ind] = rect_ave(np.array(data['data'][tri_ind][chan_ind]), window_size=args.window)
     x = np.concatenate(data['data'], 1).T
     y = catter.to_categorical(np.concatenate(data['labels'], 0))
 
@@ -120,12 +129,11 @@ def main():
 
     # load all the other data
     for file in fpaths[1:]:
-        print('... ')
         with open(file, 'r') as data_file:
             data = pickle.load(data_file)
         for tri_ind in range(len(data['data'])):
             for chan_ind in range(len(data['data'][tri_ind])):
-                data['data'][tri_ind][chan_ind] = rect_ave(np.array(data['data'][tri_ind][chan_ind]), window_size=500)
+                data['data'][tri_ind][chan_ind] = rect_ave(np.array(data['data'][tri_ind][chan_ind]), window_size=args.window)
         x = np.concatenate(data['data'], 1).T
         y = catter.to_categorical(np.concatenate(data['labels'], 0))
         overall_data = np.concatenate([overall_data, x])
@@ -133,16 +141,20 @@ def main():
 
     print(len(overall_data))
     split_index = int(args.split*len(overall_data))
-    myo_net.train(overall_data[:split_index], overall_results[:split_index], eps=args.epochs)
+    if args.batch:
+        myo_net.train(overall_data[:split_index], overall_results[:split_index], eps=args.epochs, batch_size=args.batch)
+    else:
+        myo_net.train(overall_data[:split_index], overall_results[:split_index], eps=args.epochs)
     [loss, acc] = myo_net.accuracy(overall_data, overall_results)
 
-    print(loss)
-    print(acc)
+    print("loss = {0}".format(loss))
+    print("accuracy = {0}".format(acc))
 
     name = input("If you'd like to save this run, please enter a savefile name now: ")
     if name:
         # save weights
         myo_net.save(name)
+        print("saved!")
         # save configuration
         # save accuracy and loss
 

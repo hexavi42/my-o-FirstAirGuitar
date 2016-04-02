@@ -6,8 +6,8 @@ from myo import init, Hub, DeviceListener
 class Listener(DeviceListener):
 
     def __init__(self):
-        self.prev_x = 0;
-        self.prev_mag = 0;
+        self.prev_x = 0
+        self.prev_mag = 0
 
     def on_pair(self, myo, timestamp, firmware_version):
         print("Hello, Myo!")
@@ -17,7 +17,6 @@ class Listener(DeviceListener):
 
     # change from negative x to positive x is a strum
     def on_accelerometor_data(self, myo, timestamp, acceleration):
-        print("Accel:", acceleration.x, acceleration.y, acceleration.z)
         if self.prev_x < 0 and acceleration.x > 0:
             print("Strummed")
         self.prev_x = acceleration.x

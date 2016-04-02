@@ -41,6 +41,9 @@ class nur_net(object):
     def accuracy(self, x, y):
         return self.model.test_on_batch(x, y, accuracy=True)
 
+    def predict(self, x, batch_sz=128):
+        return self.model.predict(x, batch_size=batch_sz, verbose=0)
+
     def save(self, fname):
         return self.model.save_weights(fname, overwrite=False)
 
