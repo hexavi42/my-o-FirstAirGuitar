@@ -4,10 +4,8 @@ from time import sleep
 from myo import init, Hub, DeviceListener
 
 class Listener(DeviceListener):
-
-    def __init__(self):
-        self.prev_x = 0
-        self.prev_mag = 0
+    prev_x = 0
+    prev_mag = 0
 
     def on_pair(self, myo, timestamp, firmware_version):
         print("Hello, Myo!")
