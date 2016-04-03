@@ -24,7 +24,7 @@ def rect_ave(np_arr, window_size=None):
         return np.convolve(x, np.ones((window,))/window, 'same')
 
 
-class category(object):
+class Category(object):
     uniques = []
 
     def __init__(self, string_array):
@@ -115,7 +115,7 @@ def main():
     # build the neural net and train against the first set of data
     with open(fpaths[0], 'r') as data_file:
         data = pickle.load(data_file)
-    catter = category(data["labels"])
+    catter = Category(data["labels"])
     myo_net = nur_net(args.hidden, len(catter.uniques))
     for tri_ind in range(len(data['data'])):
         for chan_ind in range(len(data['data'][tri_ind])):

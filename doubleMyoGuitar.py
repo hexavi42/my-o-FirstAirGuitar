@@ -1,9 +1,12 @@
 import myo as libmyo
 import numpy as np
 import time
-import threading
 import argparse
 from gesture_classifier_5 import nur_net
+from gesture_classifier_chords import Category
+from play_chords import chord, g_chord, d_chord, em_chord, c_chord
+
+stdChordDict = {'G': g_chord, 'D': d_chord, 'C': c_chord, 'Em': em_chord}
 
 
 # https://scimusing.wordpress.com/2013/10/25/ring-buffers-in-pythonnumpy/
@@ -43,12 +46,23 @@ def ringbuff_numpy_test():
 
 
 class EmgListen(libmyo.DeviceListener):
-    store_data = [RingBuffer(30) for channel in range(8)]
-    time_stamp = RingBuffer(30)
+    store_data = None
+    time_stamp = None
     prev_x = 0
     prev_mag = 0
     left_myo = None
     right_myo = None
+    catter = None
+    nnet = None
+    chords = None
+
+    def __init__(self, model=None, chords=stdChordDict, window=30):
+        libmyo.DeviceListener.__init__(self)
+        self.store_data = [RingBuffer(window) for channel in range(8)]
+        self.time_stamp = RingBuffer(window)
+        self.catter = Category(chords.keys())
+        self.nnet = model
+        self.chords = chords
 
     def on_arm_sync(self, myo, timestamp, arm, x_direction, rotation, warmup_state):
         print("on_arm_sync")
@@ -75,15 +89,33 @@ class EmgListen(libmyo.DeviceListener):
         elif myo.value == self.right_myo:
             if self.prev_x < 0 and acceleration.x > 0:
                 channels = [np.mean(np.abs(datum.get())) for datum in self.store_data]
-                print("Strum!")
+                prediction = self.nnet.predict(np.array([channels]))
+                print(self.catter.from_categorical(prediction))
+                self.chords[self.catter.from_categorical(prediction)].play()
                 # insert some code for reacting to a strum here
             self.prev_x = acceleration.x
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Air Guitar on Myo!')
+    parser.add_argument('-f', '--filepath', type=str, default='',
+                        help='filepath of weight file to be loaded')
+    parser.add_argument('-hl', '--hidden', type=int, default=3,
+                        help='number of hidden layers to use in the model')
+    parser.add_argument('-w', '--window', type=int, default=30,
+                        help='size of moving average window on (100 Hz to 200 Hz expected sampling rate)')
+    args = parser.parse_args()
+    if args.filepath:
+        catter = Category(stdChordDict.keys())
+        loaded = nur_net(args.hidden, len(catter.uniques))
+        loaded.load(args.filepath)
+    else:
+        raise Exception("Model expected - we currently don't build this anywhere else")
+    # myo init and run
     libmyo.init()
     hub = libmyo.Hub()
-    hub.run(1000, EmgListen())
+    dubGuitar = EmgListen(model=loaded, window=args.window)
+    hub.run(1000, dubGuitar)
     try:
         while hub.running:
             time.sleep(0.5)

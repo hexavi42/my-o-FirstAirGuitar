@@ -17,10 +17,15 @@ from time import sleep
 
 DEVNULL = open(os.devnull, 'wb')
 
-class chord:
 
-    def __init__(self, *args):
+class chord:
+    notes = None
+    name = None
+
+    def __init__(self, name, *args):
+        self.name = name
         self.notes = args
+
     def play(self, duration=3):
         delay = 0
         for i in self.notes:
@@ -31,19 +36,20 @@ class chord:
 # G# or Gb
 # All notes are relative to middle A (440 hz)
 
-g_chord = chord('G3', 'B3', 'D3', 'G3', 'B3', 'G')
-d_chord = chord('D3', 'A3', 'D4', 'F#4')
-em_chord = chord('E2', 'B2', 'E3', 'G3', 'B3', 'E4')
-c_chord = chord('C3', 'E3', 'G3', 'C4', 'E4')
+g_chord = chord('G', 'G3', 'B3', 'D3', 'G3', 'B3', 'G')
+d_chord = chord('D', 'D3', 'A3', 'D4', 'F#4')
+em_chord = chord('Em', 'E2', 'B2', 'E3', 'G3', 'B3', 'E4')
+c_chord = chord('C', 'C3', 'E3', 'G3', 'C4', 'E4')
 
 chord_dict = {'C': g_chord, 'D': d_chord, 'E': em_chord, 'G': c_chord}
 
-note = str(getch()).upper()
-while True:
-    print note,
-    if note in chord_dict:
-        s = chord_dict[note]
-        s.play()
-    elif note == 'Q':
-        break
+if __name__ == "__main__":
     note = str(getch()).upper()
+    while True:
+        print note,
+        if note in chord_dict:
+            s = chord_dict[note]
+            s.play()
+        elif note == 'Q':
+            break
+        note = str(getch()).upper()
