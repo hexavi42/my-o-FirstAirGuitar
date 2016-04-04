@@ -27,10 +27,13 @@ class chord(object):
     def __init__(self, name, *args):
         self.name = name
         self.notes = args
+        if "reverse" not in name:
+            self.reverse = chord(self.name+"_reverse", *list(reversed(list(self.notes))))
 
-    def play(self, duration=3, delay_inc=0.015):
+    def play(self, duration=3, delay_inc=0.012):
         delay = 0
         for i in self.notes:
+            print i
             if i == "X":
                 pass
             else:
@@ -40,9 +43,6 @@ class chord(object):
                                      'norm', '-1'], stdin=DEVNULL, stdout=DEVNULL,
                                      stderr=DEVNULL, preexec_fn=os.setsid))
                 delay = delay + delay_inc
-
-    def reverse(self):
-        return chord(self.name, *list(reversed(list(self.notes))))
 
     def stop(self):
         for string in self.ringing:
@@ -109,30 +109,31 @@ class guitar(object):
         for index in range(len(self.ringing)):
             self.mute_string(index)
 
-    def mute_string(index):
+    def mute_string(self, index):
         try:
             os.killpg(os.getpgid(self.ringing[index].pid), signal.SIGTERM)
             self.ringing[index] = None
         except:
             pass
 
-    def fret_to_notes(frets):
+    def fret_to_notes(self, frets):
         notes = []
         for f in frets:
-            curr_pos = 
+            curr_pos = f+self.capo
+            # more here later
 
 # We can also define sharps and flats:
 # G# or Gb
 # All notes are relative to middle A (440 hz)
 
-g_chord = chord('G', 'G2', 'B3', 'D3', 'G3', 'B3', 'G4')
+g_chord = chord('G', 'G2', 'B2', 'D3', 'G3', 'B3', 'G4')
 d_chord = chord('D', 'D3', 'A3', 'D4', 'F#4')
 em_chord = chord('Em', 'E2', 'B2', 'E3', 'G3', 'B3', 'E4')
 c_chord = chord('C', 'C3', 'E3', 'G3', 'C4', 'E4')
 
 chord_dict = {'A': g_chord, 'S': d_chord, 'D': em_chord, 'F': c_chord,
-              'Z': g_chord.reverse(), 'X': d_chord.reverse(),
-              'C': em_chord.reverse(), 'V': c_chord.reverse()}
+              'Z': g_chord.reverse, 'X': d_chord.reverse,
+              'C': em_chord.reverse, 'V': c_chord.reverse}
 
 if __name__ == "__main__":
     s = None

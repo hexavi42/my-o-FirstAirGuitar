@@ -93,6 +93,12 @@ class EmgListen(libmyo.DeviceListener):
                 print(self.catter.from_categorical(prediction))
                 self.chords[self.catter.from_categorical(prediction)].play()
                 # insert some code for reacting to a strum here
+            elif self.prev_x > 0 and acceleration.x < 0:
+                channels = [np.mean(np.abs(datum.get())) for datum in self.store_data]
+                prediction = self.nnet.predict(np.array([channels]))
+                print(self.catter.from_categorical(prediction))
+                self.chords[self.catter.from_categorical(prediction)].reverse.play()
+                # insert some code for reacting to a strum here
             self.prev_x = acceleration.x
 
 
