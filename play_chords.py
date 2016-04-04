@@ -30,10 +30,9 @@ class chord(object):
         if "reverse" not in name:
             self.reverse = chord(self.name+"_reverse", *list(reversed(list(self.notes))))
 
-    def play(self, duration=3, delay_inc=0.012):
+    def play(self, duration=3, delay_inc=0.011):
         delay = 0
         for i in self.notes:
-            print i
             if i == "X":
                 pass
             else:
